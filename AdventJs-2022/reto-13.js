@@ -36,13 +36,7 @@ Recuerda que deben estar ordenados los id de forma ascendente.
 */
 
 function getFilesToBackup(lastBackup, changes) {
-    const modifications = changes.filter(backUp => backUp[1] > lastBackup)
-
-    const toUpdate = []
-    modifications.forEach(item => {
-        if (!toUpdate.includes(item[0])) {
-            toUpdate.push(item[0])
-        }
-    })
-    return toUpdate.sort((a, b) => a - b)
+    let modifications = changes.filter((backUp) => (backUp[1] > lastBackup));
+    let toUpdate = modifications.map((item) => item[0]);
+    return [...new Set(toUpdate)].sort((a, b) => a - b);
 }

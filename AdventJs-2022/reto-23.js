@@ -47,49 +47,35 @@ Basado en la entrevista técnica de SpaceX de CodeSignal
 */
 
 function executeCommands(commands) {
-    const MAX_VALUE = 256;
+    let cpu = [0, 0, 0, 0, 0, 0, 0, 0];
 
-    const run = (action, i) => {
-        const [command, args] = action.split(" ");
-        const commandArgs = args.split(",")
-            .map((a) => a.replace(/V(\d+)/, (_, p1) => `V0${p1 % 8}`));
-        actions[command](...commandArgs, i);
-    };
+    let cmd = {
+        MOV: (x) => {
+            let mov = x.split(",")[0].split(" ")[1];
+            cpu[+x.at(-1)] = (cpu[+mov.at(-1)] * +mov.startsWith("V")) + ~~mov;
+        },
+        ADD: (x) => {
+            let v1 = +x.split(",")[0].at(-1);
+            let v2 = +x.split(",")[1].at(-1);
+            cpu[v1] = (cpu[v1] + cpu[v2]) % 256;
+        },
+        INC: (x) => {
+            cpu[+x.at(-1)] = (cpu[+x.at(-1)] + 1) % 256;
+        },
+        DEC: (x) => {
+            cpu[+x.at(-1)] = (((cpu[+x.at(-1)] - 1) % 256) + 256) % 256;
+        },
+        JMP: (x) => {
+            commands = commands
+                .concat(
+                    commands.slice(+x.split(" ").at(-1),
+                        (commands.indexOf(x) + 1) * !!cpu[0])
+                );
+        }
+    }
 
-    const registries = {
-        V00: 0,
-        V01: 0,
-        V02: 0,
-        V03: 0,
-        V04: 0,
-        V05: 0,
-        V06: 0,
-        V07: 0,
-    };
-
-    const actions = {
-        MOV: (value, id) => {
-            let r = +value;
-            registries[id] = r;
-            value[0] === "V" && (registries[id] = registries[value]);
-        },
-        ADD: (value1, value2) => {
-            registries[value1] =
-                (registries[value1] + registries[value2]) % MAX_VALUE;
-        },
-        DEC: (value1) => {
-            registries[value1] = (registries[value1] - 1 + MAX_VALUE) % MAX_VALUE;
-        },
-        INC: (value1) => {
-            registries[value1] = (registries[value1] + 1) % MAX_VALUE;
-        },
-        JMP: (i, idx) => {
-            registries.V00 > 0 &&
-                commands.slice(i, idx + 1).forEach((c) => run(c, idx));
-        },
-    };
-
-    commands.forEach(run);
-
-    return Object.values(registries);
+    for (let i = 0; i < commands.length; i++) {
+        cmd[commands[i].split(" ")[0]](commands[i]);
+    }
+    return cpu;
 }

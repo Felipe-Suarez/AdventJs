@@ -26,6 +26,6 @@ El número de códigos de barras que hay que imprimir puede ser muy grande.
 */
 
 function dryNumber(dry, numbers) {
-    return Array.from({ length: numbers + 1 }, (_, i) => i + '')
-        .map((num) => num.includes(dry) && Number(num)).filter(num => num)
+    return Array.from({ length: numbers }, (_, i) => i + 1)
+        .filter(num => num.toString().includes(dry))
 }
